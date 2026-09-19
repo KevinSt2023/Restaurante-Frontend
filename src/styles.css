@@ -1,0 +1,176 @@
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource/cinzel/600.css';
+@import '@fontsource/cinzel/700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tokens de marca ValexaFood: negro profundo, vino y dorado.
+   Se usan como rgb(var(--vf-x) / alfa) desde Tailwind.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  --vf-fondo: 247 244 240;
+  --vf-superficie: 255 255 255;
+  --vf-elevada: 251 249 246;
+  --vf-borde: 229 222 214;
+  --vf-texto: 30 24 25;
+  --vf-suave: 102 92 90;
+  --vf-tenue: 150 140 136;
+  --vf-vino: 128 29 49;
+  --vf-vino-claro: 166 45 68;
+  --vf-vino-oscuro: 86 17 32;
+  --vf-oro: 176 136 52;
+  --vf-oro-claro: 214 180 106;
+  --vf-oro-oscuro: 130 98 32;
+  --vf-tinta: 16 13 14;
+  --vf-exito: 21 128 82;
+  --vf-alerta: 176 110 10;
+  --vf-peligro: 190 38 52;
+  --vf-info: 37 99 170;
+  color-scheme: light;
+}
+
+
+:root[data-theme='oscuro'] {
+  --vf-fondo: 18 15 16;
+  --vf-superficie: 28 24 25;
+  --vf-elevada: 36 31 32;
+  --vf-borde: 58 50 51;
+  --vf-texto: 242 236 230;
+  --vf-suave: 180 170 164;
+  --vf-tenue: 130 121 117;
+  --vf-vino: 178 58 82;
+  --vf-vino-claro: 204 88 110;
+  --vf-vino-oscuro: 120 30 48;
+  --vf-oro: 214 180 106;
+  --vf-oro-claro: 232 206 146;
+  --vf-oro-oscuro: 176 136 52;
+  --vf-exito: 64 178 124;
+  --vf-alerta: 226 162 60;
+  --vf-peligro: 236 92 104;
+  --vf-info: 96 156 226;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='claro']):not([data-theme='oscuro']) {
+    --vf-fondo: 18 15 16;
+    --vf-superficie: 28 24 25;
+    --vf-elevada: 36 31 32;
+    --vf-borde: 58 50 51;
+    --vf-texto: 242 236 230;
+    --vf-suave: 180 170 164;
+    --vf-tenue: 130 121 117;
+    --vf-vino: 178 58 82;
+    --vf-vino-claro: 204 88 110;
+    --vf-vino-oscuro: 120 30 48;
+    --vf-oro: 214 180 106;
+    --vf-oro-claro: 232 206 146;
+    --vf-oro-oscuro: 176 136 52;
+    --vf-exito: 64 178 124;
+    --vf-alerta: 226 162 60;
+    --vf-peligro: 236 92 104;
+    --vf-info: 96 156 226;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-fondo text-texto font-sans antialiased;
+    font-feature-settings: 'tnum' 1;
+  }
+  /* Pantallas táctiles: sin doble toque para zoom, sin retraso de 300 ms. */
+  button, a, [role='button'], input, select, textarea, label { touch-action: manipulation; }
+  :focus-visible { @apply outline-none ring-2 ring-oro ring-offset-2 ring-offset-fondo; }
+}
+
+@layer components {
+  /* ─── Botones: nunca menos de 48 px de alto (dedo, no mouse) ─── */
+  .btn {
+    @apply inline-flex min-h-toque select-none items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-semibold
+           transition-[background-color,box-shadow,transform,color] duration-150 active:scale-[0.97]
+           disabled:pointer-events-none disabled:opacity-45;
+  }
+  .btn-primario { @apply btn bg-vino text-white shadow-sm hover:bg-vino-claro; }
+  .btn-oro { @apply btn bg-oro text-tinta shadow-sm hover:bg-oro-claro; }
+  .btn-secundario { @apply btn border border-borde bg-superficie text-texto hover:bg-elevada; }
+  .btn-peligro { @apply btn bg-peligro text-white hover:opacity-90; }
+  .btn-fantasma { @apply btn text-suave hover:bg-elevada hover:text-texto; }
+  .btn-icono {
+    @apply inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-suave transition-colors
+           hover:bg-elevada hover:text-texto active:scale-95;
+  }
+  .btn-sm { @apply min-h-[2.75rem] px-4 text-sm; }
+
+  /* ─── Campos: 48 px y 16 px de letra (evita el zoom automático en celulares) ─── */
+  .etiqueta { @apply mb-1.5 block text-sm font-semibold text-suave; }
+  .campo {
+    @apply block min-h-toque w-full rounded-xl border border-borde bg-superficie px-4 text-base text-texto
+           placeholder:text-tenue transition-colors focus:border-oro focus:outline-none focus:ring-2 focus:ring-oro/30
+           disabled:bg-elevada disabled:text-tenue;
+  }
+  textarea.campo { @apply py-3; }
+  select.campo { @apply pr-10; }
+  .ayuda { @apply mt-1 text-xs text-tenue; }
+
+  .tarjeta { @apply rounded-2xl border border-borde bg-superficie shadow-tarjeta; }
+  .titulo-pagina { @apply text-2xl font-bold tracking-tight text-texto sm:text-[1.75rem]; }
+  .subtitulo { @apply text-sm text-suave; }
+
+  .chip { @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold; }
+  .chip-exito { @apply chip bg-exito/10 text-exito; }
+  .chip-alerta { @apply chip bg-alerta/15 text-alerta; }
+  .chip-peligro { @apply chip bg-peligro/10 text-peligro; }
+  .chip-info { @apply chip bg-info/10 text-info; }
+  .chip-neutro { @apply chip bg-borde/60 text-suave; }
+  .chip-oro { @apply chip bg-oro/15 text-oro-oscuro; }
+
+  .tabla { @apply w-full text-left text-sm; }
+  .tabla thead th { @apply whitespace-nowrap border-b border-borde px-4 py-3 text-xs font-bold uppercase tracking-wide text-tenue; }
+  .tabla tbody td { @apply border-b border-borde/70 px-4 py-3 align-middle; }
+  .tabla tbody tr { @apply transition-colors; }
+  .tabla tbody tr.fila-clic { @apply cursor-pointer hover:bg-elevada active:bg-borde/40; }
+
+  /* Pestañas grandes, cómodas al dedo, con scroll horizontal en celular. */
+  .pestanas { @apply flex gap-1 overflow-x-auto border-b border-borde; scrollbar-width: none; }
+  .pestana {
+    @apply min-h-toque whitespace-nowrap border-b-2 border-transparent px-4 text-sm font-semibold text-suave
+           transition-colors hover:text-texto;
+  }
+  .pestana-activa { @apply border-vino text-vino; }
+
+  /* Opción táctil (mosaico seleccionable): tipos, meses, medios de pago, roles… */
+  .opcion {
+    @apply flex min-h-toque items-center justify-center gap-2 rounded-2xl border-[1.5px] border-borde bg-superficie px-3 py-2
+           text-center text-[15px] font-semibold text-suave transition-all active:scale-[0.97];
+  }
+  .opcion-activa { @apply border-vino bg-vino/10 text-vino; }
+
+  /* Interruptor táctil */
+  .interruptor { @apply relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full bg-borde transition-colors; }
+  .interruptor[aria-checked='true'] { @apply bg-exito; }
+  .interruptor span { @apply inline-block h-6 w-6 translate-x-1 rounded-full bg-white shadow transition-transform; }
+  .interruptor[aria-checked='true'] span { @apply translate-x-7; }
+
+  /* Modales y formularios largos: 90dvh con barra de scroll SIEMPRE visible;
+     el fondo de la página no se mueve. */
+  .panel-desplazable { max-height: 90dvh; overflow-y: scroll; overscroll-behavior: contain; scrollbar-gutter: stable; }
+  .panel-desplazable::-webkit-scrollbar { width: 10px; }
+  .panel-desplazable::-webkit-scrollbar-thumb { background: rgb(var(--vf-borde)); border-radius: 8px; border: 2px solid rgb(var(--vf-superficie)); }
+  .panel-desplazable::-webkit-scrollbar-track { background: rgb(var(--vf-elevada)); }
+}
+
+/* SweetAlert2 con la marca y botones táctiles */
+.swal2-popup { border-radius: 1.25rem !important; background: rgb(var(--vf-superficie)) !important; color: rgb(var(--vf-texto)) !important; font-family: 'Plus Jakarta Sans Variable', system-ui, sans-serif !important; }
+.swal2-title { color: rgb(var(--vf-texto)) !important; font-size: 1.25rem !important; }
+.swal2-html-container { color: rgb(var(--vf-suave)) !important; font-size: 0.95rem !important; }
+.swal2-actions { gap: 0.5rem; width: 100%; padding: 0 1rem; }
+.swal2-styled { min-height: 3rem !important; min-width: 7.5rem !important; border-radius: 0.75rem !important; font-weight: 600 !important; margin: 0 !important; }
+.swal2-confirm { background: rgb(var(--vf-vino)) !important; }
+.swal2-cancel { background: rgb(var(--vf-elevada)) !important; color: rgb(var(--vf-texto)) !important; border: 1px solid rgb(var(--vf-borde)) !important; }
+.swal2-input, .swal2-textarea { border-radius: 0.75rem !important; font-size: 1rem !important; background: rgb(var(--vf-superficie)) !important; color: rgb(var(--vf-texto)) !important; border-color: rgb(var(--vf-borde)) !important; }
+.swal2-toast { box-shadow: 0 12px 40px rgb(0 0 0 / 0.18) !important; }
