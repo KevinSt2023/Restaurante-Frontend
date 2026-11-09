@@ -21,7 +21,7 @@ import { Icono } from '../../shared/icono';
 
     <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
       @for (n of conteos(); track n.nivel) {
-        <button type="button" class="tarjeta flex items-center gap-3 p-4 text-left" [class.ring-2]="filtro() === n.nivel" [class.ring-vino]="filtro() === n.nivel"
+        <button type="button" class="tarjeta flex items-center gap-3 p-4 text-left" [class.ring-2]="filtro() === n.nivel" [class.ring-marino]="filtro() === n.nivel"
                 (click)="filtro.set(filtro() === n.nivel ? null : n.nivel)">
           <span class="h-3.5 w-3.5 rounded-full" [class]="niveles[n.nivel].punto"></span>
           <div><div class="text-xs font-bold uppercase text-tenue">{{ niveles[n.nivel].texto }}</div><div class="text-2xl font-extrabold">{{ n.n }}</div></div>
@@ -81,7 +81,7 @@ export class Salud implements OnInit {
   filtradas = computed(() => this.lista().filter(s => !this.filtro() || s.nivelGeneral === this.filtro()));
 
   criticos = (s: SaludEmpresa) => s.hallazgos.filter(h => h.severidad === 'CRITICO');
-  whatsapp = (s: SaludEmpresa) => enlaceWhatsapp(s.telefono!, `Hola, te saluda VK Software Solutions (ValexaFood). Notamos lo siguiente en ${s.empresa}: ` +
+  whatsapp = (s: SaludEmpresa) => enlaceWhatsapp(s.telefono!, `Hola, te saluda VK Software Solutions (Valexa). Notamos lo siguiente en ${s.empresa}: ` +
     this.criticos(s).map(h => `${h.titulo}: ${h.detalle}`).join(' ') + ' ¿Te ayudamos?');
 
   alternar(id: number): void {

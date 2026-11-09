@@ -46,11 +46,11 @@ import { Icono } from '../../shared/icono';
     <div class="tarjeta divide-y divide-borde">
       @for (b of items(); track b.bitacoraId) {
         <div class="flex gap-3 p-4">
-          <div class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" [class]="b.rolId === 0 ? 'bg-oro' : 'bg-vino'"></div>
+          <div class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" [class]="b.rolId === 0 ? 'bg-naranja' : 'bg-marino'"></div>
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2 text-sm">
               <b>{{ b.usuarioNombre }}</b><span class="chip-neutro">{{ b.accion }}</span>
-              @if (b.empresa) { <a [routerLink]="['/sa/empresas', b.tenantId]" class="chip-oro hover:underline">{{ b.empresa }}</a> }
+              @if (b.empresa) { <a [routerLink]="['/sa/empresas', b.tenantId]" class="chip-naranja hover:underline">{{ b.empresa }}</a> }
             </div>
             <div class="mt-1 text-sm text-suave">{{ b.detalle }}</div>
             <div class="mt-0.5 text-xs text-tenue">{{ b.fecha | fechaHora }}{{ b.ip ? ' · IP ' + b.ip : '' }}</div>

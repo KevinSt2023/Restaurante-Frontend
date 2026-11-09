@@ -8,17 +8,20 @@ const SIN_TOKEN = ['/auth/login', '/auth/refresh', '/auth/logout'];
 const conToken = (req: HttpRequest<unknown>, token: string | null) =>
   token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
+const conSucursal = (req: HttpRequest<unknown>, sucursalId: number | null) =>
+  sucursalId == null ? req : req.clone({ setHeaders: { 'X-Sucursal-Id': String(sucursalId) } });
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const sesion = inject(SesionService);
   if (SIN_TOKEN.some(r => req.url.includes(r))) return next(req);
 
-  return next(conToken(req, sesion.token())).pipe(
+  return next(conSucursal(conToken(req, sesion.token()), sesion.sucursalActivaId())).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status !== 401 || !sesion.autenticado()) return throwError(() => error);
 
       const motivo = decodeURIComponent(error.headers?.get('X-Sesion-Motivo') ?? '');
       if (error.headers?.get('X-Plan-Vencido')) {
-        sesion.cerrarSesion('El plan de tu empresa venció. Renueva para seguir usando ValexaFood.');
+        sesion.cerrarSesion('El plan de tu empresa venció. Renueva para seguir usando Valexa.');
         return throwError(() => error);
       }
       if (motivo === 'Empresa suspendida' || motivo === 'Usuario inactivo') {
@@ -33,7 +36,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             sesion.cerrarSesion(motivo === 'Sesión cerrada' ? 'Tu sesión se cerró desde administración. Vuelve a ingresar.' : 'Tu sesión expiró. Vuelve a ingresar.');
             return throwError(() => error);
           }
-          return next(conToken(req, nuevo));
+          return next(conSucursal(conToken(req, nuevo), sesion.sucursalActivaId()));
         })
       );
     })

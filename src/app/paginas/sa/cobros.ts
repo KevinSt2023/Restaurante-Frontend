@@ -20,7 +20,7 @@ import { RegistrarCobro } from '../../shared/registrar-cobro';
 
     <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
       @for (k of resumen(); track k.texto) {
-        <button type="button" class="tarjeta p-4 text-left transition-colors" [class.ring-2]="filtro() === k.estado" [class.ring-vino]="filtro() === k.estado" (click)="filtro.set(filtro() === k.estado ? null : k.estado)">
+        <button type="button" class="tarjeta p-4 text-left transition-colors" [class.ring-2]="filtro() === k.estado" [class.ring-marino]="filtro() === k.estado" (click)="filtro.set(filtro() === k.estado ? null : k.estado)">
           <div class="text-xs font-bold uppercase text-tenue">{{ k.texto }}</div>
           <div class="mt-1 text-2xl font-extrabold" [class]="k.color">{{ k.n }}</div>
         </button>
@@ -39,9 +39,9 @@ import { RegistrarCobro } from '../../shared/registrar-cobro';
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
-                  <a [routerLink]="['/sa/empresas', c.tenantId]" class="font-bold hover:text-vino">{{ c.nombre }}</a>
+                  <a [routerLink]="['/sa/empresas', c.tenantId]" class="font-bold hover:text-marino">{{ c.nombre }}</a>
                   <span [class]="estados[c.estado].chip">{{ estados[c.estado].texto }}</span>
-                  @if (c.bienvenidaDisponible) { <span class="chip-oro">Bienvenida</span> }
+                  @if (c.bienvenidaDisponible) { <span class="chip-naranja">Bienvenida</span> }
                 </div>
                 <div class="mt-1 text-sm text-suave">
                   {{ c.planNombre ?? 'Sin plan' }} · {{ c.precioMensual | soles }}/mes ·
@@ -54,7 +54,7 @@ import { RegistrarCobro } from '../../shared/registrar-cobro';
                 @if (c.celularPeru) {
                   <a class="btn-secundario btn-sm" [href]="recordatorio(c)" target="_blank" rel="noopener" aria-label="Recordar por WhatsApp"><vf-icono nombre="whatsapp" [tam]="18" /><span class="hidden sm:inline">Recordar</span></a>
                 }
-                <button type="button" class="btn-oro btn-sm" (click)="cobrar.set(c)" [disabled]="!c.planId"><vf-icono nombre="cobros" [tam]="18" /> Cobrar</button>
+                <button type="button" class="btn-naranja btn-sm" (click)="cobrar.set(c)" [disabled]="!c.planId"><vf-icono nombre="cobros" [tam]="18" /> Cobrar</button>
               </div>
             </div>
           </div>
@@ -65,7 +65,7 @@ import { RegistrarCobro } from '../../shared/registrar-cobro';
         <h2 class="mb-3 font-bold">Últimos movimientos</h2>
         @for (m of movimientos(); track m.movimientoId) {
           <div class="flex items-start gap-3 border-b border-borde py-3 last:border-0" [class.opacity-50]="m.estado === 'ANULADO'">
-            <vf-icono [nombre]="m.tipo === 'PAGO' ? 'cobros' : 'regalo'" [tam]="18" [class]="m.tipo === 'PAGO' ? 'text-exito' : 'text-oro'" class="mt-0.5" />
+            <vf-icono [nombre]="m.tipo === 'PAGO' ? 'cobros' : 'regalo'" [tam]="18" [class]="m.tipo === 'PAGO' ? 'text-exito' : 'text-naranja'" class="mt-0.5" />
             <div class="min-w-0 flex-1">
               <div class="truncate text-sm font-semibold">{{ m.empresa }}</div>
               <div class="text-xs text-suave">{{ m.tipo === 'PAGO' ? (m.monto | soles) : 'Cortesía' }} · {{ m.meses }} m · {{ m.fechaRegistro | fechaHora }}</div>
@@ -111,8 +111,8 @@ export class Cobros implements OnInit {
   recordatorio(c: Cobranza): string {
     const vence = fmt.fecha(c.vencimiento);
     const texto = c.estado === 'VENCIDA'
-      ? `Hola, te saluda VK Software Solutions. El plan ${c.planNombre} de ${c.nombre} en ValexaFood venció el ${vence}. Para que tu equipo vuelva a entrar, renueva por ${fmt.soles(c.precioMensual)} al mes. ¡Gracias!`
-      : `Hola, te saluda VK Software Solutions. Te recordamos que el plan ${c.planNombre} de ${c.nombre} en ValexaFood vence el ${vence}. La renovación es de ${fmt.soles(c.precioMensual)} al mes. ¡Gracias por confiar en nosotros!`;
+      ? `Hola, te saluda VK Software Solutions. El plan ${c.planNombre} de ${c.nombre} en Valexa venció el ${vence}. Para que tu equipo vuelva a entrar, renueva por ${fmt.soles(c.precioMensual)} al mes. ¡Gracias!`
+      : `Hola, te saluda VK Software Solutions. Te recordamos que el plan ${c.planNombre} de ${c.nombre} en Valexa vence el ${vence}. La renovación es de ${fmt.soles(c.precioMensual)} al mes. ¡Gracias por confiar en nosotros!`;
     return enlaceWhatsapp(c.telefono!, texto);
   }
 

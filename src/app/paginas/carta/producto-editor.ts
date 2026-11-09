@@ -8,6 +8,7 @@ import {
 import { SolesPipe } from '../../core/formato';
 import { SesionService } from '../../core/sesion';
 import { Ui, esc, mensajeError } from '../../core/ui';
+import { validarConfiguracionCombo } from '../../core/carta-validaciones';
 import { Icono } from '../../shared/icono';
 
 interface Formulario {
@@ -88,7 +89,7 @@ interface Formulario {
           <div class="flex flex-wrap gap-2">
             @for (e of etiquetasVisibles(); track e) {
               <button type="button" class="chip min-h-[2.5rem] border px-3.5 text-sm" (click)="alternarEtiqueta(e)"
-                      [class]="f.etiquetas.includes(e) ? 'border-oro bg-oro/15 text-oro-oscuro' : 'border-borde text-suave'">
+                      [class]="f.etiquetas.includes(e) ? 'border-naranja bg-naranja/15 text-naranja-oscuro' : 'border-borde text-suave'">
                 @if (f.etiquetas.includes(e)) { <vf-icono nombre="check" [tam]="14" [grosor]="3" /> } {{ e }}
               </button>
             }
@@ -104,7 +105,7 @@ interface Formulario {
               <div><h2 class="font-bold">Tamaños o variantes</h2><p class="text-sm text-suave">Ej. Personal / Familiar, Vaso / Jarra. Cada una con su precio.</p></div>
               @if (puedeCombos()) {
                 <button type="button" class="btn-secundario btn-sm shrink-0" (click)="variantes.push({ varianteId: null, nombre: '', precio: f.precio, activo: true })"><vf-icono nombre="mas" [tam]="16" /> Variante</button>
-              } @else { <span class="chip-oro shrink-0"><vf-icono nombre="candado" [tam]="12" /> Plan Avanzado</span> }
+              } @else { <span class="chip-naranja shrink-0"><vf-icono nombre="candado" [tam]="12" /> Plan Avanzado</span> }
             </div>
             @for (v of variantes; track $index; let i = $index) {
               <div class="mb-2 grid grid-cols-[1fr_8rem_auto_auto] items-center gap-2">
@@ -120,14 +121,14 @@ interface Formulario {
           <section class="tarjeta p-5" [class.opacity-60]="!puedeCombos()">
             <div class="mb-3 flex items-center justify-between gap-2">
               <div><h2 class="font-bold">Modificadores</h2><p class="text-sm text-suave">Qué puede pedir el cliente: término, adicionales, "sin cebolla"… (en el orden en que los marques).</p></div>
-              @if (!puedeCombos()) { <span class="chip-oro shrink-0"><vf-icono nombre="candado" [tam]="12" /> Plan Avanzado</span> }
+              @if (!puedeCombos()) { <span class="chip-naranja shrink-0"><vf-icono nombre="candado" [tam]="12" /> Plan Avanzado</span> }
             </div>
             <div class="grid gap-2 sm:grid-cols-2">
               @for (g of grupos(); track g.grupoId) {
                 <button type="button" class="flex min-h-toque items-start gap-3 rounded-2xl border p-3 text-left transition-colors" [disabled]="!puedeCombos()"
-                        [class]="grupoIds.includes(g.grupoId) ? 'border-vino bg-vino/5' : 'border-borde'" (click)="alternarGrupo(g.grupoId)">
+                        [class]="grupoIds.includes(g.grupoId) ? 'border-marino bg-marino/5' : 'border-borde'" (click)="alternarGrupo(g.grupoId)">
                   <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
-                        [class]="grupoIds.includes(g.grupoId) ? 'bg-vino text-white' : 'border-2 border-borde'">{{ posicion(g.grupoId) }}</span>
+                        [class]="grupoIds.includes(g.grupoId) ? 'bg-marino text-white' : 'border-2 border-borde'">{{ posicion(g.grupoId) }}</span>
                   <span><span class="block font-semibold">{{ g.nombre }}</span><span class="block text-xs text-suave">{{ resumenGrupo(g) }}</span></span>
                 </button>
               } @empty { <p class="text-sm text-tenue">No hay grupos creados. Créalos en Carta → Modificadores.</p> }
@@ -138,7 +139,7 @@ interface Formulario {
           <section class="tarjeta p-5">
             <div class="mb-3 flex items-center justify-between gap-2">
               <div><h2 class="font-bold">Arma el combo</h2><p class="text-sm text-suave">Grupos como "Plato de fondo" o "Bebida": el cliente elige de cada uno.</p></div>
-              <button type="button" class="btn-secundario btn-sm shrink-0" (click)="combo.push({ nombre: '', cantidad: 1, opciones: [] })"><vf-icono nombre="mas" [tam]="16" /> Grupo</button>
+              <button type="button" class="btn-secundario btn-sm shrink-0" (click)="combo.push({ nombre: '', cantidad: 1, opciones: [] })" [disabled]="combo.length >= 8"><vf-icono nombre="mas" [tam]="16" /> Grupo</button>
             </div>
             @for (g of combo; track $index; let gi = $index) {
               <div class="mb-3 rounded-2xl border border-borde p-3">
@@ -147,16 +148,16 @@ interface Formulario {
                   <div class="flex items-center gap-1">
                     <button type="button" class="btn-icono border border-borde" (click)="g.cantidad = mayor(1, g.cantidad - 1)" aria-label="Menos">−</button>
                     <span class="w-14 text-center text-sm"><b class="text-lg">{{ g.cantidad }}</b> elige</span>
-                    <button type="button" class="btn-icono border border-borde" (click)="g.cantidad = g.cantidad + 1" aria-label="Más">+</button>
+                    <button type="button" class="btn-icono border border-borde" (click)="g.cantidad = g.cantidad + 1" [disabled]="g.cantidad >= 20" aria-label="Más">+</button>
                   </div>
                   <button type="button" class="btn-icono text-peligro" (click)="combo.splice(gi, 1)" aria-label="Quitar grupo"><vf-icono nombre="basura" /></button>
                 </div>
                 @for (o of g.opciones; track $index; let oi = $index) {
                   <div class="mb-2 grid grid-cols-[1fr_7rem_auto] items-center gap-2 pl-2">
                     <select class="campo" [name]="'co' + gi + '_' + oi" [(ngModel)]="o.productoId" aria-label="Producto">
-                      @for (c of componentes(); track c.productoId) { <option [ngValue]="c.productoId">{{ c.nombre }}</option> }
+                      @for (c of componentes(); track c.productoId) { <option [ngValue]="c.productoId" [disabled]="productoComboRepetido(gi, oi, c.productoId)">{{ c.nombre }}</option> }
                     </select>
-                    <input class="campo" [name]="'cx' + gi + '_' + oi" type="number" step="0.10" min="0" inputmode="decimal" [(ngModel)]="o.precioExtra" aria-label="Precio extra" />
+                    <input class="campo" [name]="'cx' + gi + '_' + oi" type="number" step="0.01" min="0" max="9999" inputmode="decimal" [(ngModel)]="o.precioExtra" aria-label="Precio extra" />
                     <button type="button" class="btn-icono text-peligro" (click)="g.opciones.splice(oi, 1)" aria-label="Quitar"><vf-icono nombre="x" /></button>
                   </div>
                 }
@@ -257,6 +258,9 @@ export class ProductoEditor implements OnInit {
   etiquetasVisibles = () => [...new Set([...ETIQUETAS_SUGERIDAS, ...this.f.etiquetas])];
   mayor = (a: number, b: number) => Math.max(a, b);
   primerComponente = () => this.componentes().at(0)?.productoId ?? 0;
+  productoComboRepetido(grupoIndice: number, opcionIndice: number, productoId: number): boolean {
+    return this.combo[grupoIndice]?.opciones.some((opcion, indice) => indice !== opcionIndice && opcion.productoId === productoId) ?? false;
+  }
   igv = (a: string) => a.charAt(0) + a.slice(1).toLowerCase();
   posicion = (id: number) => { const i = this.grupoIds.indexOf(id); return i >= 0 ? i + 1 : ''; };
   resumenGrupo = (g: Grupo) => `${g.minimo > 0 ? 'obligatorio' : 'opcional'} · ${g.opciones.map(o => o.nombre).slice(0, 4).join(', ')}${g.opciones.length > 4 ? '…' : ''}`;
@@ -324,6 +328,10 @@ export class ProductoEditor implements OnInit {
   async guardar(): Promise<void> {
     if (!this.f.nombre.trim()) { this.ui.error('Escribe el nombre del plato.', 'Falta un dato'); return; }
     if (!this.f.categoriaId) { this.ui.error('Elige una categoría (créala primero en la pestaña Categorías).', 'Falta un dato'); return; }
+    if (this.f.tipo === 'COMBO' && this.puedeCombos()) {
+      const errorCombo = validarConfiguracionCombo(this.combo, this.componentes().map(x => x.productoId));
+      if (errorCombo) { this.ui.error(errorCombo, 'Revisa el combo'); return; }
+    }
     this.guardando.set(true);
     try {
       const r = await this.api.guardarProducto(this.p()?.productoId ?? null, this.dto());

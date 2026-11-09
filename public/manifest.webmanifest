@@ -1,0 +1,42 @@
+{
+  "name": "Valexa · Software para restaurantes",
+  "short_name": "Valexa",
+  "description": "Mesas, pedidos, cocina, caja y delivery para restaurantes.",
+  "lang": "es-PE",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0D1C30",
+  "theme_color": "#0D1C30",
+  "categories": ["business", "food", "productivity"],
+  "icons": [
+    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Salón y pedidos",
+      "short_name": "Salón",
+      "description": "El plano de mesas, para tomar y cobrar",
+      "url": "/operacion",
+      "icons": [{ "src": "icono-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Cocina",
+      "short_name": "Cocina",
+      "description": "La cola de comandas del área que atiendes",
+      "url": "/cocina",
+      "icons": [{ "src": "icono-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Mis envíos",
+      "short_name": "Envíos",
+      "description": "Los repartos asignados",
+      "url": "/delivery/mis-envios",
+      "icons": [{ "src": "icono-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

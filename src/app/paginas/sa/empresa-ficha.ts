@@ -15,7 +15,7 @@ import { RegistrarCobro } from '../../shared/registrar-cobro';
 type Pestana = 'resumen' | 'suscripcion' | 'sucursales' | 'usuarios' | 'accesos' | 'bitacora' | 'salud';
 type Dialogo = null | 'datos' | 'plan' | 'cobro' | 'sucursal' | 'usuario';
 
-const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef', 4: 'bandeja', 5: 'moto' };
+const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef', 4: 'bandeja', 5: 'moto', 6: 'tienda' };
 
 @Component({
   selector: 'vf-empresa-ficha',
@@ -27,23 +27,23 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
     @if (e(); as e) {
       <!-- Encabezado -->
       <div class="tarjeta mb-4 overflow-hidden">
-        <div class="h-2 bg-gradient-to-r from-vino via-vino-claro to-oro"></div>
+        <div class="h-2 bg-gradient-to-r from-marino via-marino-claro to-naranja"></div>
         <div class="flex flex-col gap-4 p-5 sm:p-6 xl:flex-row xl:items-center">
           <div class="flex min-w-0 flex-1 items-center gap-4">
-            <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-vino to-vino-oscuro text-2xl font-extrabold text-oro-claro">
+            <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-marino to-marino-oscuro text-2xl font-extrabold text-naranja-claro">
               {{ e.nombreComercial.trim().charAt(0).toUpperCase() }}
             </div>
             <div class="min-w-0">
               <h1 class="break-words text-2xl font-bold">{{ e.nombreComercial }}</h1>
               <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-suave">
                 <span [class]="estados[e.estadoCobranza].chip">{{ estados[e.estadoCobranza].texto }}</span>
-                <span class="chip-oro"><vf-icono nombre="corona" [tam]="12" /> {{ e.plan?.nombre ?? 'Sin plan' }}</span>
+                <span class="chip-naranja"><vf-icono nombre="corona" [tam]="12" /> {{ e.plan?.nombre ?? 'Sin plan' }}</span>
                 <span>Vence {{ e.vencimiento | fecha }}@if (e.diasParaVencer !== null) { ({{ e.diasParaVencer >= 0 ? 'en ' + e.diasParaVencer + ' días' : 'hace ' + -e.diasParaVencer + ' días' }}) }</span>
               </div>
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button type="button" class="btn-oro" (click)="dialogo.set('cobro')"><vf-icono nombre="cobros" [tam]="18" /> Registrar cobro</button>
+            <button type="button" class="btn-naranja" (click)="dialogo.set('cobro')"><vf-icono nombre="cobros" [tam]="18" /> Registrar cobro</button>
             @if (e.celularPeru) {
               <a class="btn-secundario" [href]="whatsapp()" target="_blank" rel="noopener"><vf-icono nombre="whatsapp" [tam]="18" /> WhatsApp</a>
             }
@@ -111,7 +111,7 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
               @if (e.plan; as p) {
                 <div class="mb-4 flex items-end justify-between rounded-2xl bg-elevada p-4">
                   <div><div class="text-lg font-bold">{{ p.nombre }}</div><div class="text-sm text-suave">desde {{ e.planFechaInicio | fecha }}</div></div>
-                  <div class="text-right"><div class="text-xl font-extrabold">{{ p.precioMensual | soles }}</div><div class="text-xs text-suave">al mes</div></div>
+                  <div class="text-right"><div class="text-xl font-extrabold">{{ p.aCotizar ? 'A cotizar' : (p.precioMensual | soles) }}</div>@if (!p.aCotizar) { <div class="text-xs text-suave">al mes</div> }</div>
                 </div>
                 <div class="space-y-3">
                   <div>
@@ -125,9 +125,10 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
                   <div class="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
                     @for (r of e.usoPorRol; track r.rolId) {
                       <div class="rounded-xl border border-borde p-2.5 text-center" [class.opacity-50]="!r.permitido">
-                        <vf-icono [nombre]="iconoRol(r.rolId)" [tam]="18" class="text-oro" />
+                        <vf-icono [nombre]="iconoRol(r.rolId)" [tam]="18" class="text-naranja" />
                         <div class="text-xs text-suave">{{ r.rol }}</div>
                         <div class="font-bold">{{ r.permitido ? r.usados + ' / ' + (r.maximo || '∞') : 'No incluido' }}</div>
+                        @if (r.permitido && r.porSucursal) { <div class="text-[11px] text-tenue">por local</div> }
                       </div>
                     }
                   </div>
@@ -147,7 +148,7 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
 
             <div class="tarjeta p-5 xl:col-span-2">
               <div class="mb-3 flex items-center justify-between">
-                <h2 class="flex items-center gap-2 font-bold"><vf-icono nombre="nota" [tam]="18" class="text-oro" /> Notas internas</h2>
+                <h2 class="flex items-center gap-2 font-bold"><vf-icono nombre="nota" [tam]="18" class="text-naranja" /> Notas internas</h2>
                 <span class="text-xs text-tenue">Solo las ve el SuperAdmin</span>
               </div>
               <textarea class="campo" rows="4" maxlength="4000" [(ngModel)]="notas" placeholder="Acuerdos comerciales, historial de soporte, preferencias del cliente…"></textarea>
@@ -160,18 +161,18 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
         @case ('suscripcion') {
           <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <p class="text-sm text-suave">Cada pago o cortesía movió el vencimiento. Solo se anula el último, y con motivo.</p>
-            <button type="button" class="btn-oro" (click)="dialogo.set('cobro')"><vf-icono nombre="mas" [tam]="18" /> Registrar cobro</button>
+            <button type="button" class="btn-naranja" (click)="dialogo.set('cobro')"><vf-icono nombre="mas" [tam]="18" /> Registrar cobro</button>
           </div>
           <div class="space-y-3">
             @for (m of movimientos(); track m.movimientoId) {
               <div class="tarjeta flex flex-col gap-3 p-4 sm:flex-row sm:items-center" [class.opacity-60]="m.estado === 'ANULADO'">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" [class]="m.tipo === 'PAGO' ? 'bg-exito/10 text-exito' : 'bg-oro/15 text-oro'">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" [class]="m.tipo === 'PAGO' ? 'bg-exito/10 text-exito' : 'bg-naranja/15 text-naranja'">
                   <vf-icono [nombre]="m.tipo === 'PAGO' ? 'cobros' : 'regalo'" />
                 </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap items-center gap-2 font-semibold">
                     {{ m.tipo === 'PAGO' ? (m.monto | soles) : 'Cortesía' }} · {{ m.meses }} mes(es) · {{ m.planNombre }}
-                    @if (m.descuentoPct > 0) { <span class="chip-oro">−{{ m.descuentoPct }} %</span> }
+                    @if (m.descuentoPct > 0) { <span class="chip-naranja">−{{ m.descuentoPct }} %</span> }
                     @if (m.estado === 'ANULADO') { <span class="chip-peligro">Anulado</span> }
                   </div>
                   <div class="text-sm text-suave">
@@ -201,10 +202,10 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
             @for (s of e.sucursalesLista; track s.sucursalId) {
               <div class="tarjeta p-4" [class.opacity-60]="!s.activo">
                 <div class="flex items-start gap-3">
-                  <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-elevada text-oro"><vf-icono nombre="tienda" /></div>
+                  <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-elevada text-naranja"><vf-icono nombre="tienda" /></div>
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2 font-bold">{{ s.nombre }}
-                      @if (s.esPrincipal) { <span class="chip-oro">Principal</span> }
+                      @if (s.esPrincipal) { <span class="chip-naranja">Principal</span> }
                       @if (!s.activo) { <span class="chip-neutro">Desactivada</span> }
                     </div>
                     <div class="text-sm text-suave">{{ s.direccion ?? 'Sin dirección' }}{{ s.telefono ? ' · ' + s.telefono : '' }}</div>
@@ -233,7 +234,7 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
             @for (u of e.usuariosLista; track u.usuarioId) {
               <div class="tarjeta p-4" [class.opacity-60]="!u.activo">
                 <div class="flex items-start gap-3">
-                  <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" [class]="u.rolId === 1 ? 'bg-vino text-oro-claro' : 'bg-elevada text-oro'">
+                  <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" [class]="u.rolId === 1 ? 'bg-marino text-naranja-claro' : 'bg-elevada text-naranja'">
                     <vf-icono [nombre]="iconoRol(u.rolId)" />
                   </div>
                   <div class="min-w-0 flex-1">
@@ -285,7 +286,7 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
           <div class="tarjeta divide-y divide-borde">
             @for (b of bitacora(); track b.bitacoraId) {
               <div class="flex gap-3 p-4">
-                <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" [class]="b.rolId === 0 ? 'bg-oro' : 'bg-vino'"></div>
+                <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" [class]="b.rolId === 0 ? 'bg-naranja' : 'bg-marino'"></div>
                 <div class="min-w-0 flex-1">
                   <div class="text-sm"><b>{{ b.usuarioNombre }}</b> <span class="chip-neutro ml-1">{{ b.accion }}</span></div>
                   <div class="mt-0.5 text-sm text-suave">{{ b.detalle }}</div>
@@ -353,13 +354,13 @@ const ICONO_ROL: Record<number, string> = { 1: 'corona', 2: 'billete', 3: 'chef'
               @for (p of planes(); track p.planId) {
                 <button type="button" class="rounded-2xl border-2 p-4 text-left transition-colors disabled:opacity-40"
                         [disabled]="!p.activo || p.planId === e.plan?.planId"
-                        [class]="planNuevo() === p.planId ? 'border-vino bg-vino/5' : 'border-borde hover:border-oro'" (click)="planNuevo.set(p.planId)">
+                        [class]="planNuevo() === p.planId ? 'border-marino bg-marino/5' : 'border-borde hover:border-naranja'" (click)="planNuevo.set(p.planId)">
                   <div class="flex items-center justify-between"><span class="font-bold">{{ p.nombre }}</span>
                     @if (p.planId === e.plan?.planId) { <span class="chip-neutro">Actual</span> }
                     @else if (e.plan && p.precioMensual > e.plan.precioMensual) { <span class="chip-exito"><vf-icono nombre="sube" [tam]="12" /> Sube</span> }
                     @else if (e.plan) { <span class="chip-alerta"><vf-icono nombre="baja" [tam]="12" /> Baja</span> }
                   </div>
-                  <div class="text-xl font-extrabold">{{ p.precioMensual | soles }}<span class="text-sm font-normal text-suave">/mes</span></div>
+                  <div class="text-xl font-extrabold">@if (p.aCotizar) { A cotizar } @else { {{ p.precioMensual | soles }}<span class="text-sm font-normal text-suave">/mes</span> }</div>
                   <div class="mt-1 text-xs text-suave">{{ p.maxSucursales || '∞' }} sucursal(es) · Admin + {{ p.maxUsuarios || '∞' }} usuario(s)</div>
                 </button>
               }
@@ -477,7 +478,7 @@ export class EmpresaFicha implements OnInit {
     const e = this.e();
     if (!e?.telefono) return '';
     const vence = e.vencimiento ? fmt.fecha(e.vencimiento) : '';
-    return enlaceWhatsapp(e.telefono, `Hola ${e.contactoNombre ?? ''}, te saluda VK Software Solutions por tu servicio ValexaFood (${e.plan?.nombre ?? ''}). ` +
+    return enlaceWhatsapp(e.telefono, `Hola ${e.contactoNombre ?? ''}, te saluda VK Software Solutions por tu servicio Valexa (${e.plan?.nombre ?? ''}). ` +
       (e.diasParaVencer !== null && e.diasParaVencer < 0 ? `Tu plan venció el ${vence}; renuévalo para que tu equipo siga trabajando.` : `Tu plan vence el ${vence}.`));
   });
 
@@ -497,7 +498,8 @@ export class EmpresaFicha implements OnInit {
     const lista = e.usoPorRol.filter(r => r.permitido).map(r => {
       const lleno = !!r.maximo && r.usados >= r.maximo;
       const esSuyo = this.usuarioEditando?.rolId === r.rolId;
-      return { rolId: r.rolId, rol: r.rol, disponible: !lleno || esSuyo, detalle: r.maximo ? `${r.usados}/${r.maximo}` : 'sin tope' };
+      const detalle = !r.maximo ? 'sin tope' : `${r.usados}/${r.maximo}${r.porSucursal ? ' por local' : ''}`;
+      return { rolId: r.rolId, rol: r.rol, disponible: !lleno || esSuyo, detalle };
     });
     if (this.usuarioEditando?.rolId === ROLES.ADMIN) return [{ rolId: 1, rol: 'Administrador', disponible: true, detalle: 'único' }];
     if (!this.usuarioEditando && !hayAdmin) lista.unshift({ rolId: 1, rol: 'Administrador', disponible: true, detalle: 'único' });

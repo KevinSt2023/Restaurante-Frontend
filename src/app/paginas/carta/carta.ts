@@ -26,7 +26,7 @@ export const PALETA = ['#801D31', '#B08834', '#C2410C', '#15803D', '#0E7490', '#
         @if (s.tienePermiso('CARTA_DISPONIBILIDAD')) {
           <a routerLink="/carta/disponibilidad" class="btn-secundario"><vf-icono nombre="prohibido" [tam]="18" /> Agotados de hoy</a>
         }
-        <a routerLink="/carta/platos/nuevo" class="btn-oro"><vf-icono nombre="mas" [tam]="18" /> Nuevo plato</a>
+        <a routerLink="/carta/platos/nuevo" class="btn-naranja"><vf-icono nombre="mas" [tam]="18" /> Nuevo plato</a>
       </div>
     </div>
 
@@ -53,7 +53,7 @@ export const PALETA = ['#801D31', '#B08834', '#C2410C', '#15803D', '#0E7490', '#
                 <option [ngValue]="null">Todos los tipos</option>
                 @for (t of tipos; track t.valor) { <option [ngValue]="t.valor">{{ t.texto }}</option> }
               </select>
-              <button type="button" class="btn-secundario shrink-0" [class.!border-vino]="inactivos()" (click)="alternarInactivos()">
+              <button type="button" class="btn-secundario shrink-0" [class.!border-marino]="inactivos()" (click)="alternarInactivos()">
                 <vf-icono [nombre]="inactivos() ? 'ojo' : 'prohibido'" [tam]="18" /> <span class="hidden sm:inline">{{ inactivos() ? 'Con inactivos' : 'Solo activos' }}</span>
               </button>
             </div>
@@ -90,7 +90,7 @@ export const PALETA = ['#801D31', '#B08834', '#C2410C', '#15803D', '#0E7490', '#
                   }
                   <span class="absolute left-0 top-0 h-full w-1.5" [style.background]="p.categoriaColor"></span>
                   @if (!p.activo) { <span class="chip-neutro absolute right-2 top-2">Inactivo</span> }
-                  @if (p.tipo === 'COMBO') { <span class="chip-oro absolute right-2 top-2">Combo</span> }
+                  @if (p.tipo === 'COMBO') { <span class="chip-naranja absolute right-2 top-2">Combo</span> }
                 </div>
                 <div class="flex flex-1 flex-col p-3">
                   <div class="line-clamp-2 font-bold leading-snug">{{ p.nombre }}</div>
@@ -138,7 +138,7 @@ export const PALETA = ['#801D31', '#B08834', '#C2410C', '#15803D', '#0E7490', '#
       @case ('modificadores') {
         @if (!puedeCombos()) {
           <div class="tarjeta flex flex-col items-center gap-3 p-10 text-center">
-            <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-oro/15 text-oro"><vf-icono nombre="candado" [tam]="28" /></span>
+            <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-naranja/15 text-naranja"><vf-icono nombre="candado" [tam]="28" /></span>
             <p class="max-w-md font-semibold">Los modificadores (término de la carne, adicionales, "sin cebolla"), las variantes y los combos vienen en el plan Avanzado.</p>
             <p class="text-sm text-suave">Consulta con VK Software Solutions para subir de plan.</p>
           </div>
@@ -309,7 +309,7 @@ export const PALETA = ['#801D31', '#B08834', '#C2410C', '#15803D', '#0E7490', '#
     .chipcat { display:inline-flex; min-height:2.75rem; flex-shrink:0; align-items:center; gap:.5rem; border-radius:9999px; border:1px solid rgb(var(--vf-borde));
       background: rgb(var(--vf-superficie)); padding: 0 1rem; font-size:.9rem; font-weight:600; color: rgb(var(--vf-suave)); }
     .chipcat b { font-weight:700; color: rgb(var(--vf-tenue)); }
-    .chipcat-activo { border-color: rgb(var(--vf-vino)); background: rgb(var(--vf-vino)); color:#fff; }
+    .chipcat-activo { border-color: rgb(var(--vf-marino)); background: rgb(var(--vf-marino)); color:#fff; }
     .chipcat-activo b { color: rgb(255 255 255 / .75); }
   `],
 })

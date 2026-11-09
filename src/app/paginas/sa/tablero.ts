@@ -14,19 +14,19 @@ import { Icono } from '../../shared/icono';
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 class="titulo-pagina">Tablero del negocio</h1>
-        <p class="subtitulo">ValexaFood al {{ t()?.hoy | fecha }} · precios con IGV</p>
+        <p class="subtitulo">Valexa al {{ t()?.hoy | fecha }} · precios con IGV</p>
       </div>
       <div class="flex gap-2">
         <button type="button" class="btn-secundario" (click)="cargar()" [disabled]="cargando()"><vf-icono nombre="refrescar" [tam]="18" /> Actualizar</button>
-        <a routerLink="/sa/empresas/nueva" class="btn-oro"><vf-icono nombre="mas" [tam]="18" /> Nueva empresa</a>
+        <a routerLink="/sa/empresas/nueva" class="btn-naranja"><vf-icono nombre="mas" [tam]="18" /> Nueva empresa</a>
       </div>
     </div>
 
     @if (t(); as t) {
       <!-- Indicadores principales -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div class="kpi relative overflow-hidden bg-gradient-to-br from-vino to-vino-oscuro text-white">
-          <div class="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-oro/20 blur-2xl"></div>
+        <div class="kpi relative overflow-hidden bg-gradient-to-br from-marino to-marino-oscuro text-white">
+          <div class="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-naranja/20 blur-2xl"></div>
           <div class="kpi-titulo text-white/70">Ingreso recurrente mensual</div>
           <div class="kpi-valor">{{ t.ingresoRecurrente | soles }}</div>
           <div class="text-sm text-white/65">{{ t.ingresoRecurrenteSinIgv | soles }} sin IGV</div>
@@ -86,7 +86,7 @@ import { Icono } from '../../shared/icono';
               <div class="group flex h-full flex-1 flex-col items-center justify-end gap-2">
                 <div class="relative w-full flex-1">
                   <div class="absolute inset-x-0 bottom-0 rounded-t-lg transition-all group-hover:opacity-90"
-                       [class]="ultimo ? 'bg-gradient-to-t from-oro-oscuro to-oro-claro' : 'bg-gradient-to-t from-vino-oscuro to-vino-claro'"
+                       [class]="ultimo ? 'bg-gradient-to-t from-naranja-oscuro to-naranja-claro' : 'bg-gradient-to-t from-marino-oscuro to-marino-claro'"
                        [style.height.%]="altura(m.cobrado)" [style.min-height.px]="m.cobrado > 0 ? 4 : 0"></div>
                   <div class="pointer-events-none absolute -top-9 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-tinta px-2 py-1 text-xs text-white shadow group-hover:block">
                     {{ m.cobrado | soles }} · {{ m.altas }} alta(s)
@@ -104,7 +104,7 @@ import { Icono } from '../../shared/icono';
           @for (p of t.porPlan; track p.planId) {
             <div class="mb-4">
               <div class="mb-1 flex justify-between text-sm"><span class="font-semibold">{{ p.plan }} <span class="font-normal text-tenue">· {{ p.empresas }}</span></span><span>{{ p.ingresoMensual | soles }}</span></div>
-              <div class="h-2.5 overflow-hidden rounded-full bg-borde/60"><div class="h-full rounded-full bg-gradient-to-r from-vino to-oro" [style.width.%]="t.ingresoRecurrente ? (p.ingresoMensual / t.ingresoRecurrente) * 100 : 0"></div></div>
+              <div class="h-2.5 overflow-hidden rounded-full bg-borde/60"><div class="h-full rounded-full bg-gradient-to-r from-marino to-naranja" [style.width.%]="t.ingresoRecurrente ? (p.ingresoMensual / t.ingresoRecurrente) * 100 : 0"></div></div>
             </div>
           } @empty {
             <p class="text-sm text-suave">Todavía no hay empresas con servicio vigente.</p>

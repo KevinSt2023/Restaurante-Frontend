@@ -54,7 +54,7 @@ import { Icono } from '../../shared/icono';
                 <vf-icono [nombre]="p.agotado ? 'prohibido' : 'check'" [tam]="16" [grosor]="2.5" /> {{ p.agotado ? 'AGOTADO' : 'Disponible' }}
               </span>
             </div>
-            @if (ocupado() === p.productoId) { <span class="absolute inset-0 flex items-center justify-center bg-superficie/60"><span class="h-6 w-6 animate-spin rounded-full border-2 border-borde border-t-vino"></span></span> }
+            @if (ocupado() === p.productoId) { <span class="absolute inset-0 flex items-center justify-center bg-superficie/60"><span class="h-6 w-6 animate-spin rounded-full border-2 border-borde border-t-marino"></span></span> }
           </button>
         }
       </div>

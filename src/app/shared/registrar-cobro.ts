@@ -31,11 +31,18 @@ import { Modal } from './modal';
             <div><div class="text-tenue">Plan</div><div class="font-semibold">{{ s.planNombre }}</div></div>
             <div><div class="text-tenue">Precio de lista</div><div class="font-semibold">{{ s.precioLista | soles }}</div></div>
             <div><div class="text-tenue">Vence hoy</div><div class="font-semibold">{{ s.venceActual | fecha }}</div></div>
-            <div><div class="text-tenue">Quedará hasta</div><div class="font-bold text-vino">{{ s.venceraHasta | fecha }}</div></div>
+            <div><div class="text-tenue">Quedará hasta</div><div class="font-bold text-marino">{{ s.venceraHasta | fecha }}</div></div>
+            @if (s.localesCobrados > 0) {
+              <div class="col-span-2 border-t border-borde pt-2 text-xs text-suave">
+                Incluye <b>{{ s.localesCobrados }}</b> local(es) además del incluido
+                ({{ s.localesActivos }} activos) a {{ s.precioSucursalAdicional | soles }} cada uno:
+                <b>{{ s.cargoPorLocales | soles }}</b> del total.
+              </div>
+            }
           </div>
           @if (d.tipo === 'PAGO' && s.bienvenidaDisponible && s.descuentoBienvenidaPct > 0) {
-            <div class="mb-4 flex items-start gap-3 rounded-xl bg-oro/10 p-3 text-sm">
-              <vf-icono nombre="chispa" class="text-oro" />
+            <div class="mb-4 flex items-start gap-3 rounded-xl bg-naranja/10 p-3 text-sm">
+              <vf-icono nombre="chispa" class="text-naranja" />
               <span>Primer pago: <b>{{ s.descuentoBienvenidaPct }} % de bienvenida</b> en la primera mensualidad → sugerido <b>{{ s.montoSugerido | soles }}</b>.</span>
             </div>
           }
@@ -66,7 +73,7 @@ import { Modal } from './modal';
 
         <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" class="btn-secundario" (click)="cerrar.emit()">Cancelar</button>
-          <button type="submit" class="btn-oro" [disabled]="guardando()"><vf-icono nombre="check" [tam]="18" /> {{ guardando() ? 'Guardando…' : 'Registrar' }}</button>
+          <button type="submit" class="btn-naranja" [disabled]="guardando()"><vf-icono nombre="check" [tam]="18" /> {{ guardando() ? 'Guardando…' : 'Registrar' }}</button>
         </div>
       </form>
     </vf-modal>

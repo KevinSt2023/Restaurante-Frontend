@@ -19,7 +19,7 @@ type Filtro = 'TODAS' | EstadoCobranza;
         <h1 class="titulo-pagina">Empresas</h1>
         <p class="subtitulo">{{ empresas().length }} restaurantes registrados · {{ activas() }} activos</p>
       </div>
-      <a routerLink="/sa/empresas/nueva" class="btn-oro"><vf-icono nombre="mas" [tam]="18" /> Nueva empresa</a>
+      <a routerLink="/sa/empresas/nueva" class="btn-naranja"><vf-icono nombre="mas" [tam]="18" /> Nueva empresa</a>
     </div>
 
     <div class="tarjeta mb-4 p-3 sm:p-4">
@@ -36,7 +36,7 @@ type Filtro = 'TODAS' | EstadoCobranza;
       <div class="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1">
         @for (f of filtros; track f.valor) {
           <button type="button" class="btn btn-sm shrink-0 border" (click)="filtro.set(f.valor)"
-                  [class]="filtro() === f.valor ? 'border-vino bg-vino text-white' : 'border-borde bg-superficie text-suave hover:text-texto'">
+                  [class]="filtro() === f.valor ? 'border-marino bg-marino text-white' : 'border-borde bg-superficie text-suave hover:text-texto'">
             {{ f.texto }} <span class="rounded-full bg-black/10 px-2 text-xs">{{ conteo(f.valor) }}</span>
           </button>
         }
@@ -108,7 +108,7 @@ type Filtro = 'TODAS' | EstadoCobranza;
     }
   `,
   styles: [`.avatar { display:flex; height:2.75rem; width:2.75rem; flex-shrink:0; align-items:center; justify-content:center; border-radius:.75rem;
-    background: linear-gradient(135deg, rgb(var(--vf-vino)), rgb(var(--vf-vino-oscuro))); color: rgb(var(--vf-oro-claro)); font-weight: 800; }`],
+    background: linear-gradient(135deg, rgb(var(--vf-marino)), rgb(var(--vf-marino-oscuro))); color: rgb(var(--vf-naranja-claro)); font-weight: 800; }`],
 })
 export class Empresas implements OnInit {
   private api = inject(SaApi);

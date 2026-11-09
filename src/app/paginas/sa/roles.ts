@@ -23,15 +23,15 @@ const MINIMOS_ADMIN = ['USUARIOS_GESTIONAR', 'SUCURSALES_GESTIONAR', 'CONFIGURAC
     <div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       @for (r of matriz()?.roles ?? []; track r.rolId) {
         <button type="button" class="tarjeta flex min-h-[7rem] flex-col items-start gap-1 p-4 text-left transition-all active:scale-[0.98]"
-                [class]="rolId() === r.rolId ? '!border-vino ring-2 ring-vino' : ''" (click)="elegir(r)">
+                [class]="rolId() === r.rolId ? '!border-marino ring-2 ring-marino' : ''" (click)="elegir(r)">
           <div class="flex w-full items-center justify-between">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl" [class]="rolId() === r.rolId ? 'bg-vino text-oro-claro' : 'bg-elevada text-oro'"><vf-icono [nombre]="icono(r.rolId)" /></span>
+            <span class="flex h-10 w-10 items-center justify-center rounded-xl" [class]="rolId() === r.rolId ? 'bg-marino text-naranja-claro' : 'bg-elevada text-naranja'"><vf-icono [nombre]="icono(r.rolId)" /></span>
             <span class="text-xs text-tenue">{{ r.usuariosActivos }} activos</span>
           </div>
           <div class="mt-1 font-bold">{{ r.nombre }}</div>
           <div class="flex flex-wrap gap-1">
             @if (r.veDinero) { <span class="chip-exito">Maneja dinero</span> } @else { <span class="chip-neutro">No ve dinero</span> }
-            @if (!r.ocupaCupo) { <span class="chip-oro">No ocupa cupo</span> }
+            @if (!r.ocupaCupo) { <span class="chip-naranja">No ocupa cupo</span> }
           </div>
         </button>
       }

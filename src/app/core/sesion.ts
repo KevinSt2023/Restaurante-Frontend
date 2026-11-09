@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { ROLES, Sesion, UsuarioSesion, PlanSesion } from './modelos';
+import { ROLES, Sesion, UsuarioSesion, PlanSesion, SucursalDisponible } from './modelos';
 
 const CLAVE = 'vf_sesion';
 
@@ -14,6 +14,10 @@ export class SesionService {
 
   private readonly _sesion = signal<Sesion | null>(this.leer());
   readonly sesion = this._sesion.asReadonly();
+  private readonly _sucursales = signal<SucursalDisponible[]>([]);
+  readonly sucursales = this._sucursales.asReadonly();
+  private readonly _sucursalActivaId = signal<number | null>(this.leerSucursalActiva());
+  readonly sucursalActivaId = this._sucursalActivaId.asReadonly();
   readonly usuario = computed(() => this._sesion()?.usuario ?? null);
   readonly autenticado = computed(() => this._sesion() !== null);
   readonly esSuperAdmin = computed(() => this.usuario()?.rolId === ROLES.SUPERADMIN);
@@ -46,6 +50,9 @@ export class SesionService {
   async login(email: string, password: string): Promise<Sesion> {
     const s = await firstValueFrom(this.http.post<Sesion>(`${environment.api}/auth/login`, { email, password }));
     this.guardar(s);
+    this._sucursales.set([]);
+    this._sucursalActivaId.set(s.usuario.sucursalId);
+    this.persistirSucursal(s.usuario.sucursalId);
     this.motivoCierre.set(null);
     return s;
   }
@@ -76,12 +83,54 @@ export class SesionService {
 
   limpiar(): void {
     this._sesion.set(null);
+    this._sucursales.set([]);
+    this._sucursalActivaId.set(null);
     try { localStorage.removeItem(CLAVE); } catch { /* almacenamiento no disponible */ }
   }
 
   private guardar(s: Sesion): void {
     this._sesion.set(s);
+    if (this._sucursalActivaId() == null && s.usuario.sucursalId != null) {
+      this._sucursalActivaId.set(s.usuario.sucursalId);
+      this.persistirSucursal(s.usuario.sucursalId);
+    }
     try { localStorage.setItem(CLAVE, JSON.stringify(s)); } catch { /* sigue en memoria */ }
+  }
+
+  async cargarSucursales(): Promise<void> {
+    if (!this._sesion()?.usuario.tenantId) return;
+    const disponibles = await firstValueFrom(this.http.get<SucursalDisponible[]>(`${environment.api}/operacion/sucursales-disponibles`));
+    this._sucursales.set(disponibles);
+    const actual = this._sucursalActivaId();
+    if (actual != null && disponibles.some(s => s.sucursalId === actual)) return;
+    const predeterminada = this._sesion()?.usuario.sucursalId;
+    const siguiente = disponibles.find(s => s.sucursalId === predeterminada)?.sucursalId ?? disponibles[0]?.sucursalId ?? null;
+    this._sucursalActivaId.set(siguiente);
+    this.persistirSucursal(siguiente);
+  }
+
+  seleccionarSucursal(id: number): void {
+    if (!this._sucursales().some(s => s.sucursalId === id)) return;
+    this._sucursalActivaId.set(id);
+    this.persistirSucursal(id);
+  }
+
+  private persistirSucursal(id: number | null): void {
+    const tenantId = this._sesion()?.usuario.tenantId;
+    if (!tenantId) return;
+    try {
+      const key = `vf_sucursal_${tenantId}`;
+      id == null ? localStorage.removeItem(key) : localStorage.setItem(key, String(id));
+    } catch { /* el contexto se conserva en memoria */ }
+  }
+
+  private leerSucursalActiva(): number | null {
+    const tenantId = this._sesion()?.usuario.tenantId;
+    if (!tenantId) return null;
+    try {
+      const value = Number(localStorage.getItem(`vf_sucursal_${tenantId}`));
+      return Number.isInteger(value) && value > 0 ? value : null;
+    } catch { return null; }
   }
 
   private leer(): Sesion | null {

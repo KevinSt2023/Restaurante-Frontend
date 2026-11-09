@@ -10,17 +10,30 @@ export interface Sesion {
   token: string; refreshToken: string; usuario: UsuarioSesion; permisos: string[]; funciones: string[];
   rolesQueOpera: number[]; plan: PlanSesion | null;
 }
+export interface SucursalDisponible {
+  sucursalId: number; nombre: string; esPrincipal: boolean; esActiva: boolean;
+}
+export interface SesionCajaResumen {
+  sesionCajaId: number; estado: 'ABIERTA' | 'CERRADA'; fondoInicial: number; abiertaEn: string;
+  abiertoPor: number; abiertoPorNombre: string; cerradaEn: string | null; efectivoEsperado: number | null;
+  efectivoContado: number | null; diferencia: number | null; notaCierre: string | null;
+}
+export interface CajaLista {
+  cajaId: number; sucursalId: number; nombre: string; activa: boolean; sesionAbierta: SesionCajaResumen | null;
+}
 
-export interface Cupo { rolId: number; rolNombre: string; maximo: number; }
+export interface Cupo { rolId: number; rolNombre: string; maximo: number; porSucursal: boolean; }
 export interface Plan {
   planId: number; nombre: string; descripcion: string; precioMensual: number; precioAnual: number | null;
+  precioSucursalAdicional: number; precioSucursalAdicionalAnual: number | null;
   maxSucursales: number; maxUsuarios: number; adminAcumula: number[]; cupos: Cupo[]; funciones: string[];
-  destacado: boolean; orden: number; activo: boolean; empresas: number; empresasActivas: number;
+  destacado: boolean; aCotizar: boolean; orden: number; activo: boolean; empresas: number; empresasActivas: number;
 }
 export interface PlanGuardar {
   nombre: string; descripcion: string; precioMensual: number; precioAnual: number | null;
-  maxSucursales: number; maxUsuarios: number; adminAcumula: number[]; cupos: { rolId: number; maximo: number }[];
-  funciones: string[]; destacado: boolean; orden: number; activo: boolean; confirmarExcedidas?: boolean;
+  precioSucursalAdicional: number; precioSucursalAdicionalAnual: number | null; quitarPrecioSucursalAnual?: boolean;
+  maxSucursales: number; maxUsuarios: number; adminAcumula: number[]; cupos: { rolId: number; maximo: number; porSucursal: boolean }[];
+  funciones: string[]; destacado: boolean; aCotizar: boolean; orden: number; activo: boolean; confirmarExcedidas?: boolean;
 }
 export interface EmpresaExcedida { tenantId: number; nombre: string; problemas: string[]; }
 
@@ -32,7 +45,7 @@ export interface EmpresaLista {
   diasParaVencer: number | null; estadoCobranza: EstadoCobranza; sucursales: number; maxSucursales: number;
   usuarios: number; maxUsuarios: number; excede: boolean; ultimoAcceso: string | null; createdAt: string;
 }
-export interface UsoRol { rolId: number; rol: string; usados: number; maximo: number | null; permitido: boolean; }
+export interface UsoRol { rolId: number; rol: string; usados: number; maximo: number | null; permitido: boolean; porSucursal: boolean; }
 export interface Sucursal {
   sucursalId: number; nombre: string; direccion: string | null; telefono: string | null; esPrincipal: boolean;
   activo: boolean; usuarios: number; createdAt: string;
@@ -83,6 +96,8 @@ export interface SugerenciaCobro {
   tenantId: number; empresa: string; planNombre: string | null; precioMensual: number; precioAnual: number | null;
   meses: number; precioLista: number; bienvenidaDisponible: boolean; descuentoBienvenidaPct: number;
   montoSugerido: number; venceActual: string | null; venceraHasta: string;
+  localesActivos: number; localesIncluidos: number; localesCobrados: number;
+  precioSucursalAdicional: number; cargoPorLocales: number;
 }
 export interface Cobranza {
   tenantId: number; nombre: string; ruc: string | null; telefono: string | null; email: string | null; activo: boolean;
@@ -111,7 +126,7 @@ export interface SaludEmpresa {
 }
 
 export interface Bitacora {
-  bitacoraId: number; tenantId: number | null; empresa: string | null; usuarioId: number | null; usuarioNombre: string;
+  bitacoraId: number; tenantId: number | null; sucursalId: number | null; empresa: string | null; usuarioId: number | null; usuarioNombre: string;
   rolId: number | null; accion: string; entidad: string; entidadId: string | null; detalle: string; ip: string | null; fecha: string;
 }
 export interface Pagina<T> { items: T[]; total: number; pagina: number; tamanoPagina: number; }
@@ -125,7 +140,7 @@ export interface Permiso {
 export interface MatrizPermisos { roles: Rol[]; permisos: Permiso[]; }
 export interface ConfiguracionSaas { whatsappVentas: string | null; emailSoporte: string | null; descuentoBienvenidaPct: number; diasPorVencer: number; }
 
-export const ROLES = { SUPERADMIN: 0, ADMIN: 1, CAJERO: 2, COCINERO: 3, MESERO: 4, DELIVERY: 5 } as const;
+export const ROLES = { SUPERADMIN: 0, ADMIN: 1, CAJERO: 2, COCINERO: 3, MESERO: 4, DELIVERY: 5, GERENTE: 6 } as const;
 
 export const METODOS_PAGO: { valor: string; texto: string }[] = [
   { valor: 'YAPE_PLIN', texto: 'Yape / Plin' },
@@ -141,3 +156,29 @@ export const TIPOS_SERVICIO: { valor: string; texto: string }[] = [
   { valor: 'CAFETERIA', texto: 'Cafetería' }, { valor: 'FAST_FOOD', texto: 'Comida rápida' },
   { valor: 'PIZZERIA', texto: 'Pizzería' }, { valor: 'BAR', texto: 'Bar' }, { valor: 'OTRO', texto: 'Otro' },
 ];
+
+// ─── Delivery ───────────────────────────────────────────────────────────────
+export type EstadoEnvio = 'PENDIENTE' | 'ASIGNADO' | 'EN_RUTA' | 'ENTREGADO' | 'NO_ENTREGADO';
+export type MomentoPago = 'TIENDA' | 'CONTRA_ENTREGA';
+
+export interface ZonaReparto {
+  zonaId: number; nombre: string; costoEnvio: number; minutosEstimados: number; activa: boolean; orden: number;
+}
+export interface DireccionEntrega {
+  direccionId: number; zonaId: number | null; zona: string | null;
+  direccion: string; referencia: string | null; activa: boolean;
+}
+export interface ClienteDelivery {
+  clienteId: number; nombre: string; telefono: string; documento: string | null;
+  nota: string | null; activo: boolean; direcciones: DireccionEntrega[];
+}
+export interface Envio {
+  envioId: number; pedidoId: number; estado: EstadoEnvio;
+  cliente: string; telefono: string; direccion: string; referencia: string | null;
+  zona: string | null; costoEnvio: number; momentoPago: MomentoPago;
+  repartidorId: number | null; repartidor: string | null;
+  totalPedido: number; saldoPendiente: number;
+  cobradoMedio: string | null; cobradoMonto: number | null; rendido: boolean;
+  motivoNoEntrega: string | null;
+  creadoEn: string; asignadoEn: string | null; salidaEn: string | null; entregadoEn: string | null;
+}

@@ -31,9 +31,9 @@ export function sumarMeses(fechaIso: string, meses: number): string {
       @for (p of pasos; track p; let i = $index) {
         <li>
           <button type="button" class="flex w-full flex-col items-start gap-2 text-left" (click)="irA(i)" [disabled]="i > maxPaso()">
-            <span class="h-1.5 w-full rounded-full transition-colors" [class]="i <= paso() ? 'bg-vino' : 'bg-borde'"></span>
-            <span class="flex items-center gap-2 text-xs font-bold sm:text-sm" [class]="i === paso() ? 'text-vino' : i < paso() ? 'text-texto' : 'text-tenue'">
-              <span class="hidden h-6 w-6 items-center justify-center rounded-full text-xs sm:flex" [class]="i < paso() ? 'bg-exito text-white' : i === paso() ? 'bg-vino text-white' : 'bg-borde text-suave'">
+            <span class="h-1.5 w-full rounded-full transition-colors" [class]="i <= paso() ? 'bg-marino' : 'bg-borde'"></span>
+            <span class="flex items-center gap-2 text-xs font-bold sm:text-sm" [class]="i === paso() ? 'text-marino' : i < paso() ? 'text-texto' : 'text-tenue'">
+              <span class="hidden h-6 w-6 items-center justify-center rounded-full text-xs sm:flex" [class]="i < paso() ? 'bg-exito text-white' : i === paso() ? 'bg-marino text-white' : 'bg-borde text-suave'">
                 @if (i < paso()) { <vf-icono nombre="check" [tam]="14" [grosor]="3" /> } @else { {{ i + 1 }} }
               </span>
               {{ p }}
@@ -72,10 +72,10 @@ export function sumarMeses(fechaIso: string, meses: number): string {
             <div class="grid gap-3 sm:grid-cols-2">
               @for (p of planesActivos(); track p.planId) {
                 <button type="button" class="relative rounded-2xl border-2 p-4 text-left transition-colors active:scale-[0.99]"
-                        [class]="f.planId === p.planId ? 'border-vino bg-vino/5' : 'border-borde hover:border-oro'" (click)="f.planId = p.planId">
-                  @if (p.destacado) { <span class="chip-oro absolute right-3 top-3"><vf-icono nombre="estrella" [tam]="12" /> Más elegido</span> }
+                        [class]="f.planId === p.planId ? 'border-marino bg-marino/5' : 'border-borde hover:border-naranja'" (click)="f.planId = p.planId">
+                  @if (p.destacado) { <span class="chip-naranja absolute right-3 top-3"><vf-icono nombre="estrella" [tam]="12" /> Más elegido</span> }
                   <div class="text-lg font-bold">{{ p.nombre }}</div>
-                  <div class="mt-1"><span class="text-2xl font-extrabold">{{ p.precioMensual | soles }}</span><span class="text-sm text-suave">/mes</span></div>
+                  <div class="mt-1">@if (p.aCotizar) { <span class="text-2xl font-extrabold">A cotizar</span> } @else { <span class="text-2xl font-extrabold">{{ p.precioMensual | soles }}</span><span class="text-sm text-suave">/mes</span> }</div>
                   <div class="mt-3 flex flex-wrap gap-1.5 text-xs">
                     <span class="chip-neutro">{{ p.maxSucursales ? p.maxSucursales + ' sucursal(es)' : 'Sucursales ilimitadas' }}</span>
                     <span class="chip-neutro">{{ p.maxUsuarios ? 'Admin + ' + p.maxUsuarios : 'Usuarios ilimitados' }}</span>
@@ -127,8 +127,8 @@ export function sumarMeses(fechaIso: string, meses: number): string {
             </div>
             @if (f.primerCobro.tipo === 'PAGO') {
               @if (bienvenida() > 0 && planElegido()) {
-                <div class="mb-4 flex items-start gap-3 rounded-xl bg-oro/10 p-3 text-sm">
-                  <vf-icono nombre="chispa" class="text-oro" />
+                <div class="mb-4 flex items-start gap-3 rounded-xl bg-naranja/10 p-3 text-sm">
+                  <vf-icono nombre="chispa" class="text-naranja" />
                   <span>Cliente nuevo: <b>{{ bienvenida() }} % de descuento</b> en la primera mensualidad. Precio de lista {{ lista() | soles }} → sugerido <b>{{ sugerido() | soles }}</b>.</span>
                 </div>
               }
@@ -161,7 +161,7 @@ export function sumarMeses(fechaIso: string, meses: number): string {
           @if (paso() < pasos.length - 1) {
             <button type="submit" class="btn-primario min-w-[9rem]">Siguiente <vf-icono nombre="derecha" [tam]="18" /></button>
           } @else {
-            <button type="submit" class="btn-oro min-w-[11rem]" [disabled]="guardando()"><vf-icono nombre="check" [tam]="18" /> {{ guardando() ? 'Creando…' : 'Crear empresa' }}</button>
+            <button type="submit" class="btn-naranja min-w-[11rem]" [disabled]="guardando()"><vf-icono nombre="check" [tam]="18" /> {{ guardando() ? 'Creando…' : 'Crear empresa' }}</button>
           }
         </div>
       </form>
@@ -176,7 +176,7 @@ export function sumarMeses(fechaIso: string, meses: number): string {
           <div class="flex justify-between gap-3"><dt class="text-suave">Sucursal</dt><dd class="font-semibold">{{ f.sucursalNombre || 'Principal' }}</dd></div>
           <div class="flex justify-between gap-3"><dt class="text-suave">Administrador</dt><dd class="truncate font-semibold">{{ f.admin.nombre || '—' }}</dd></div>
           <div class="flex justify-between gap-3"><dt class="text-suave">Cobro</dt><dd class="font-semibold">{{ f.primerCobro.tipo === 'PAGO' ? (f.primerCobro.monto | soles) : 'Cortesía' }} · {{ f.primerCobro.meses }} m</dd></div>
-          <div class="flex justify-between gap-3 border-t border-borde pt-3"><dt class="text-suave">Servicio hasta</dt><dd class="font-bold text-vino">{{ venceHasta() | fecha }}</dd></div>
+          <div class="flex justify-between gap-3 border-t border-borde pt-3"><dt class="text-suave">Servicio hasta</dt><dd class="font-bold text-marino">{{ venceHasta() | fecha }}</dd></div>
         </dl>
       </aside>
     </div>

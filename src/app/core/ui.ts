@@ -61,7 +61,7 @@ export class Ui {
     await Swal.fire({
       icon: 'info', titleText: `Acceso de ${nombre}`,
       html: `<p style="margin-bottom:.75rem">${esc(detalle)}</p>
-             <div style="font:700 1.6rem/1.2 ui-monospace,monospace;letter-spacing:.08em;padding:.9rem;border-radius:.75rem;background:rgb(var(--vf-elevada));border:1px dashed rgb(var(--vf-oro))">${esc(clave)}</div>`,
+             <div style="font:700 1.6rem/1.2 ui-monospace,monospace;letter-spacing:.08em;padding:.9rem;border-radius:.75rem;background:rgb(var(--vf-elevada));border:1px dashed rgb(var(--vf-naranja))">${esc(clave)}</div>`,
       showCancelButton: true, confirmButtonText: 'Copiar y cerrar', cancelButtonText: 'Cerrar',
       preConfirm: () => navigator.clipboard?.writeText(clave).catch(() => undefined),
     });
