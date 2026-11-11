@@ -1,14 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Area, CartaApi, Categoria, Grupo, GrupoGuardar, ProductoLista, TIPOS_PRODUCTO, urlFoto } from '../../core/carta-api';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Area, CartaApi, CartaQr, Categoria, Grupo, GrupoGuardar, ProductoLista, TIPOS_PRODUCTO, urlFoto } from '../../core/carta-api';
 import { SolesPipe } from '../../core/formato';
 import { SesionService } from '../../core/sesion';
 import { Ui, esc, mensajeError } from '../../core/ui';
 import { Icono } from '../../shared/icono';
 import { Modal } from '../../shared/modal';
 
-type Pestana = 'platos' | 'categorias' | 'modificadores' | 'areas';
+type Pestana = 'platos' | 'categorias' | 'modificadores' | 'areas' | 'qr';
 
 export const PALETA = ['#801D31', '#B08834', '#C2410C', '#15803D', '#0E7490', '#1D4ED8', '#7C3AED', '#BE185D', '#4B5563', '#0F766E'];
 
@@ -31,8 +32,8 @@ export const PALETA = ['#801D31', '#B08834', '#C2410C', '#15803D', '#0E7490', '#
     </div>
 
     <nav class="pestanas mb-5" aria-label="Secciones de la carta">
-      @for (p of pestanas; track p.id) {
-        <button type="button" class="pestana" [class.pestana-activa]="pestana() === p.id" (click)="pestana.set(p.id)">
+      @for (p of pestanasVisibles(); track p.id) {
+        <button type="button" class="pestana" [class.pestana-activa]="pestana() === p.id" (click)="irPestana(p.id)">
           {{ p.texto }}
           @if (p.id === 'modificadores' && !puedeCombos()) { <vf-icono nombre="candado" [tam]="14" class="ml-1 text-tenue" /> }
         </button>
@@ -40,6 +41,64 @@ export const PALETA = ['#801D31', '#B08834', '#C2410C', '#15803D', '#0E7490', '#
     </nav>
 
     @switch (pestana()) {
+      <!-- ═══ CARTA QR ═══ -->
+      @case ('qr') {
+        <div class="tarjeta p-4 sm:p-6">
+          <h2 class="text-lg font-black">Carta QR</h2>
+          <p class="mt-1 max-w-2xl text-sm text-suave">
+            Una página pública con la carta de esta sucursal: sus precios y lo que hoy está agotado.
+            El cliente escanea el código de su mesa y mira. Desde ahí no se pide nada.
+          </p>
+
+          @if (qrCargando()) {
+            <p class="mt-6 text-sm text-tenue">Cargando…</p>
+          } @else if (qr()) {
+            @let q = qr()!;
+            <div class="mt-5 grid gap-6 lg:grid-cols-[260px_1fr]">
+              <div class="mx-auto w-full max-w-[260px]">
+                @if (q.svg) {
+                  <div class="rounded-2xl border border-borde bg-white p-4 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full" [innerHTML]="svgSeguro()"></div>
+                } @else {
+                  <div class="flex h-[228px] items-center justify-center rounded-2xl border border-dashed border-borde p-4 text-center text-sm text-tenue">
+                    Enciéndela para generar el código
+                  </div>
+                }
+              </div>
+
+              <div>
+                <label class="flex cursor-pointer items-start gap-3">
+                  <input type="checkbox" class="mt-1 h-5 w-5 accent-naranja" [checked]="q.activa" [disabled]="guardando()"
+                         (change)="publicarQr($any($event.target).checked)">
+                  <span>
+                    <span class="block text-sm font-black">{{ q.activa ? 'Publicada' : 'Apagada' }}</span>
+                    <span class="block text-xs text-suave">Mientras esté apagada, quien escanee el código no ve nada.</span>
+                  </span>
+                </label>
+
+                @if (q.url) {
+                  <p class="mt-5 text-xs font-bold uppercase tracking-wide text-tenue">Enlace</p>
+                  <p class="mt-1 break-all rounded-xl bg-fondo p-3 text-sm font-semibold">{{ q.url }}</p>
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <button type="button" class="btn-secundario" (click)="copiarQr(q.url!)">Copiar enlace</button>
+                    <button type="button" class="btn-secundario" [disabled]="!q.svg" (click)="descargarQr()">Descargar el código</button>
+                    <a class="btn-secundario" [href]="q.url" target="_blank" rel="noopener">Verla como el cliente</a>
+                  </div>
+
+                  <!-- Regenerar mata los QR ya pegados en las mesas. Se avisa aquí,
+                       no después. -->
+                  <p class="mt-7 max-w-xl text-xs text-suave">
+                    Imprime el código y pégalo en cada mesa. Si alguna vez quieres invalidar los que ya
+                    están impresos, regenéralo: el anterior deja de funcionar al instante.
+                  </p>
+                  <button type="button" class="btn-secundario mt-2 border-peligro/40 text-peligro"
+                          [disabled]="guardando()" (click)="regenerarQr()">Regenerar el código</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
       <!-- ═══ PLATOS ═══ -->
       @case ('platos') {
         <div class="tarjeta mb-4 p-3 sm:p-4">
@@ -318,11 +377,16 @@ export class Carta implements OnInit {
   private ui = inject(Ui);
   private router = inject(Router);
   s = inject(SesionService);
+  private sanitizer = inject(DomSanitizer);
 
-  pestanas: { id: Pestana; texto: string }[] = [
+  pestanas: { id: Pestana; texto: string; permiso?: string }[] = [
     { id: 'platos', texto: 'Platos' }, { id: 'categorias', texto: 'Categorías' },
     { id: 'modificadores', texto: 'Modificadores' }, { id: 'areas', texto: 'Áreas de preparación' },
+    { id: 'qr', texto: 'Carta QR', permiso: 'CARTA_QR' },
   ];
+  // Publicar la carta es del dueño: el plan o el rol pueden no traerlo, y
+  // entonces la pestaña no existe en vez de existir y fallar al tocarla.
+  pestanasVisibles = computed(() => this.pestanas.filter(p => !p.permiso || this.s.tienePermiso(p.permiso)));
   tipos = TIPOS_PRODUCTO;
   paleta = PALETA;
 
@@ -337,6 +401,13 @@ export class Carta implements OnInit {
   inactivos = signal(false);
   dialogo = signal<null | 'categoria' | 'area' | 'grupo'>(null);
   guardando = signal(false);
+  qr = signal<CartaQr | null>(null);
+  qrCargando = signal(false);
+  // El SVG lo genera nuestra propia API con QRCoder; no es contenido de nadie más.
+  svgSeguro = computed(() => {
+    const svg = this.qr()?.svg;
+    return svg ? this.sanitizer.bypassSecurityTrustHtml(svg) : null;
+  });
 
   puedeCombos = computed(() => { this.s.sesion(); return this.s.tienePermiso('COMBOS_GESTIONAR'); });
   filtrados = computed(() => {
@@ -446,5 +517,52 @@ export class Carta implements OnInit {
     const g = this.grupoActual();
     if (!(await this.ui.confirmar('Eliminar grupo', `¿Eliminar <b>${esc(this.grupo.nombre)}</b>? Se quitará de ${g?.productos ?? 0} plato(s).`, 'Eliminar', true))) return;
     this.ejecutar(() => this.api.eliminarGrupo(this.editId!), 'Grupo eliminado', r => this.grupos.set(r));
+  }
+
+  // ─── Carta QR ───
+  async irPestana(id: Pestana): Promise<void> {
+    this.pestana.set(id);
+    if (id === 'qr' && !this.qr()) await this.cargarQr();
+  }
+
+  private async cargarQr(): Promise<void> {
+    try { this.qrCargando.set(true); this.qr.set(await this.api.qr()); }
+    catch (e) { this.ui.error(e); } finally { this.qrCargando.set(false); }
+  }
+
+  async publicarQr(activa: boolean): Promise<void> {
+    try {
+      this.guardando.set(true);
+      this.qr.set(await this.api.guardarQr(activa));
+      this.ui.exito(activa ? 'Tu carta ya está publicada.' : 'Carta pública apagada.');
+    } catch (e) { this.ui.error(e); await this.cargarQr(); } finally { this.guardando.set(false); }
+  }
+
+  async regenerarQr(): Promise<void> {
+    const ok = await this.ui.confirmar('Regenerar el código',
+      'Los códigos QR que ya imprimiste dejarán de funcionar. Tendrás que imprimir los nuevos.',
+      'Sí, regenerar', true);
+    if (!ok) return;
+    try {
+      this.guardando.set(true);
+      this.qr.set(await this.api.guardarQr(this.qr()?.activa ?? true, true));
+      this.ui.exito('Código nuevo. Vuelve a imprimirlo para las mesas.');
+    } catch (e) { this.ui.error(e); } finally { this.guardando.set(false); }
+  }
+
+  async copiarQr(url: string): Promise<void> {
+    try { await navigator.clipboard.writeText(url); this.ui.exito('Enlace copiado.'); }
+    catch { this.ui.aviso('No se pudo copiar; selecciona el enlace y cópialo a mano.'); }
+  }
+
+  descargarQr(): void {
+    const svg = this.qr()?.svg;
+    if (!svg) return;
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'carta-qr.svg';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }

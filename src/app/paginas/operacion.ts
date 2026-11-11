@@ -391,6 +391,10 @@ type CajaCobro = { sesionCajaId: number; cajaId: number; caja: string; abiertaEn
                     </div>
                     <div class="flex shrink-0 items-center gap-2">
                       <span class="cifra">{{ i.total | currency:'PEN':'symbol':'1.2-2' }}</span>
+                      @if (puedeEntregar(i)) {
+                        <button class="btn btn-sm border border-exito/40 font-bold text-exito hover:bg-exito/10"
+                                [disabled]="ocupada()" (click)="entregar(i)">Entregar</button>
+                      }
                       @if (sesion.tienePermiso('PEDIDO_ANULAR_ITEM') && ((pedido()!.estado !== 'PAGADO' && i.estado !== 'ANULADO') || anulacionIncierta(i.pedidoItemId))) {
                         <button class="btn btn-sm border border-peligro/40 text-peligro hover:bg-peligro/10" [disabled]="ocupada()" (click)="anularItem(i)">
                           {{ anulacionIncierta(i.pedidoItemId) ? 'Conciliar' : 'Anular' }}
@@ -409,6 +413,14 @@ type CajaCobro = { sesionCajaId: number; cajaId: number; caja: string; abiertaEn
               @if (pedido()!.descuento > 0) { <p class="mt-1 text-right text-sm font-semibold text-exito">Descuento auditado: −{{ pedido()!.descuento | currency:'PEN':'symbol':'1.2-2' }}</p> }
 
               <div class="accion-fija -mx-4 mt-4 grid gap-3 px-4 pb-2 pt-3 sm:-mx-5 sm:px-5">
+                <!-- Lo listo está en el pase, no en la mesa. El que camina es el
+                     que cierra el circuito, y lo hace desde aquí. -->
+                @if (porEntregar() > 0 && sesion.tienePermiso('PEDIDO_ENTREGAR')) {
+                  <button class="btn-grande-exito w-full" [disabled]="ocupada()" (click)="entregar()">
+                    <vf-icono nombre="check" [tam]="22" />
+                    Entregar {{ porEntregar() }} {{ porEntregar() === 1 ? 'plato listo' : 'platos listos' }}
+                  </button>
+                }
                 @if (sinEnviar() > 0) {
                   <button class="btn-grande-marino w-full" [disabled]="ocupada()" (click)="enviar()">
                     <vf-icono nombre="chef" [tam]="22" />
@@ -841,6 +853,16 @@ export class OperacionPagina {
   readonly aPreparacion = computed(() =>
     (this.pedido()?.items ?? []).filter(i => !i.enviado && i.estado !== 'ANULADO' && i.areaId !== null).length);
 
+  /** Lo que cocina dejó listo y todavía está en el pase, esperando que alguien
+      lo lleve. El táper no cuenta: está LISTO desde que se envió y nadie lo
+      "sirve", así que sumarlo pondría un botón de entregar en mesas vacías. */
+  readonly porEntregar = computed(() =>
+    (this.pedido()?.items ?? []).filter(i => i.estado === 'LISTO' && i.areaId !== null).length);
+
+  puedeEntregar(i: Item): boolean {
+    return i.estado === 'LISTO' && i.areaId !== null && this.sesion.tienePermiso('PEDIDO_ENTREGAR');
+  }
+
   /** Qué importe está editando el teclado. */
   readonly campoMonto = signal<'aplicar' | 'recibido'>('aplicar');
   /** Texto en curso de cada importe: un número no distingue "10" de "10.". */
@@ -1174,6 +1196,19 @@ export class OperacionPagina {
     if (this.ajusteInciertoEnPedido(p.pedidoId)) { this.error.set('Conciliar primero la operación financiera pendiente de este pedido.'); return; }
     try { this.ocupada.set(true); this.pedido.set(await this.request<Pedido>('post', `/operacion/pedidos/${p.pedidoId}/enviar`)); this.mensaje.set('Comanda enviada a las áreas de preparación.'); await this.cargarMesas(); }
     catch (e) { this.mostrarError(e); } finally { this.ocupada.set(false); }
+  }
+
+  /** Sin ítem, entrega todo lo que esté listo. Con ítem, solo ese plato: de
+      cuatro, casi nunca salen los cuatro juntos. */
+  async entregar(item?: Item) {
+    const p = this.pedido(); if (!p) return;
+    const cuerpo = item ? { itemIds: [item.pedidoItemId] } : {};
+    try {
+      this.ocupada.set(true);
+      this.pedido.set(await this.request<Pedido>('post', `/operacion/pedidos/${p.pedidoId}/entregar`, cuerpo));
+      this.mensaje.set(item ? `${item.nombre} entregado a la mesa.` : 'Entregado a la mesa.');
+      await this.cargarMesas();
+    } catch (e) { this.mostrarError(e); } finally { this.ocupada.set(false); }
   }
   async anularBorrador() { const p=this.pedido(); if (!p) return; if (this.ajusteInciertoEnPedido(p.pedidoId)) { this.error.set('Conciliar primero la operación pendiente de este pedido.'); return; } try { this.ocupada.set(true); await this.request<Pedido>('post',`/operacion/pedidos/${p.pedidoId}/anular-borrador`); this.pedido.set(null); this.mesaSeleccionada.set(null); this.mensaje.set('Borrador vacío anulado; mesa liberada.'); await this.cargarMesas(); } catch(e) { this.mostrarError(e); } finally { this.ocupada.set(false); } }
   montoLineasSeleccionadas(): number { const p=this.pedido(); if (!p) return 0; return Math.round(p.items.reduce((s,i)=>s+Math.max(0,Math.min(i.cantidad-i.cantidadPagada,Number(this.cantidadesCuenta[i.pedidoItemId])||0))*i.precioUnitario,0)*100)/100; }

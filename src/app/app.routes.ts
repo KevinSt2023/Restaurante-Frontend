@@ -4,6 +4,9 @@ import { autenticadoGuard, cambioPasswordGuard, empresaGuard, invitadoGuard, per
 import { SesionService } from './core/sesion';
 
 export const routes: Routes = [
+  // La carta publica: sin guardas y fuera del shell. La abre un comensal con
+  // el celular, no un usuario del sistema.
+  { path: 'm/:codigo', loadComponent: () => import('./paginas/carta-publica').then(m => m.CartaPublicaPagina), title: 'Carta' },
   { path: 'login', canActivate: [invitadoGuard], loadComponent: () => import('./paginas/login').then(m => m.Login), title: 'Ingresar · Valexa' },
   { path: 'cambiar-password', canActivate: [cambioPasswordGuard], loadComponent: () => import('./paginas/cambiar-password').then(m => m.CambiarPassword), title: 'Nueva contraseña · Valexa' },
   {

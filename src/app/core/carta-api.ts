@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 // ─── Tipos (espejo de CartaService) ───
 export type TipoProducto = 'PLATO' | 'BEBIDA' | 'PRODUCTO' | 'COMBO';
 
+export interface CartaQr { activa: boolean; codigo: string | null; url: string | null; svg: string | null; }
 export interface Area { areaId: number; nombre: string; color: string; imprimeComanda: boolean; orden: number; activo: boolean; productos: number; }
 export interface Categoria { categoriaId: number; nombre: string; descripcion: string | null; color: string; orden: number; activo: boolean; productos: number; }
 export interface Opcion { opcionId: number; nombre: string; precioExtra: number; orden: number; activo: boolean; }
@@ -64,6 +65,10 @@ export class CartaApi {
   private post<T>(url: string, body: unknown = {}) { return firstValueFrom(this.http.post<T>(`${this.base}${url}`, body)); }
   private put<T>(url: string, body: unknown) { return firstValueFrom(this.http.put<T>(`${this.base}${url}`, body)); }
   private del<T>(url: string) { return firstValueFrom(this.http.delete<T>(`${this.base}${url}`)); }
+
+  // Carta QR: la pagina publica de la sucursal activa.
+  qr() { return this.get<CartaQr>('/qr'); }
+  guardarQr(activa: boolean, regenerar = false) { return this.put<CartaQr>('/qr', { activa, regenerar }); }
 
   areas() { return this.get<Area[]>('/areas'); }
   guardarArea(id: number | null, dto: { nombre: string; color: string; imprimeComanda: boolean }) {

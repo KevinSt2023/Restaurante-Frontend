@@ -3,7 +3,9 @@ import { inject } from '@angular/core';
 import { catchError, from, switchMap, throwError } from 'rxjs';
 import { SesionService } from './sesion';
 
-const SIN_TOKEN = ['/auth/login', '/auth/refresh', '/auth/logout'];
+// La carta publica no lleva token ni sucursal: la abre un comensal, y el dueno
+// que la mire desde su propia sesion no tiene por que mandar su JWT ahi.
+const SIN_TOKEN = ['/auth/login', '/auth/refresh', '/auth/logout', '/publico/'];
 
 const conToken = (req: HttpRequest<unknown>, token: string | null) =>
   token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
